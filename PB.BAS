@@ -1,4 +1,4 @@
-DECLARE SUB PRINTat (X%, Y%, s$)
+DECLARE SUB PRINTat (X%, Y%, S$)
 DECLARE SUB GetScreenDimentions (W%, H%)
 DECLARE SUB DispColors ()
 DECLARE SUB Limit ()
@@ -8,8 +8,8 @@ ON ERROR RESUME NEXT
 WIDTH 80, 50
 
 CONST PBLen = 20, PBHalfLen = 10
-CONST interval = 1 / 30
-CONST TRUE = -1, false = 0
+CONST interval = 1 / 60
+CONST TRUE = -1, FALSE = 0
 
 DIM SHARED ScreenWidth AS INTEGER
 DIM SHARED screenheight AS INTEGER
@@ -22,7 +22,7 @@ TYPE segtype
   Speed AS SINGLE
 END TYPE
 
-DIM Segs(5) AS segtype, s AS segtype
+DIM Segs(5) AS segtype, S AS segtype
 DIM PBX AS INTEGER, PBY AS INTEGER
                                 
 FOR i% = LBOUND(Segs) TO UBOUND(Segs)
@@ -42,15 +42,15 @@ DO
 LOOP
 
 DO
+  IF (TIMER - t#) > interval THEN drawframe% = TRUE ELSE drawframe% = FALSE
   IF drawframe% THEN t# = TIMER: COLOR , 0: CLS
-  IF (TIMER - t#) > interval THEN drawframe% = TRUE ELSE drawframe% = false
   CALL MousePoll(PBY, PBX, l%, r%)
   PBX = PBX - PBHalfLen
 
   FOR i% = LBOUND(Segs) TO UBOUND(Segs)
-    s = Segs(i%)
+    S = Segs(i%)
     GOSUB SegAction
-    Segs(i%) = s
+    Segs(i%) = S
   NEXT
 
   'COLOR , 11: PRINTat PBX, PBY + 1, SPACE$(PBVal)
@@ -77,6 +77,10 @@ GameOver:
     NEXT
 
   ELSE
+    FOR i% = 0 TO 100
+      SOUND ((i% AND 2) * 220 + 220), .1
+      SOUND ((i% AND 1) * 400 + 64), .1
+    NEXT
     WIDTH 80, 25
     COLOR 7, 1
     CLS
@@ -97,6 +101,11 @@ RetryChr:
 
     LOOP UNTIL CSRLIN = 24
 
+    FOR i% = 0 TO 1000
+      SOUND (999 - i%) / 2, .025
+      SOUND 0, .025
+    NEXT
+
   END IF
 
 END
@@ -104,13 +113,31 @@ END
 
 
 SegAction:
-  IF drawframe% THEN s.Y = s.Y + s.Speed
-  IF s.Y < 1 THEN RETURN
-  IF s.Y >= screenheight GOTO resetSeg
-  IF (s.Y - 1 <= PBY) AND (s.Y >= PBY) AND (s.X >= PBX) AND (s.X <= PBX + PBLen) THEN
 
-    IF s.X > PBX + PBVal THEN
-      SELECT CASE s.Type
+  IF drawframe% THEN
+    S.Y = S.Y + S.Speed
+
+    IF S.Y < 1 THEN RETURN
+
+    COLOR , S.Type
+    LOCATE S.Y, S.X
+    SELECT CASE S.Type
+      CASE 1: PRINT "1";
+      CASE 2: PRINT "%";
+      CASE 3: PRINT "3";
+      CASE 4: PRINT "!";
+      CASE 5: PRINT "-";
+    END SELECT
+
+  END IF
+
+  IF S.Y < 1 THEN RETURN
+  IF S.Y >= screenheight GOTO resetSeg
+  IF (S.Y - 1 <= PBY) AND (S.Y >= PBY) AND (S.X >= PBX) AND (S.X <= PBX + PBLen) THEN
+
+    IF S.X > PBX + PBVal THEN
+      SELECT CASE S.Type
+
         CASE 1
           PBVal = PBVal + 1
         CASE 2
@@ -121,45 +148,39 @@ SegAction:
           GOTO GameOver
         CASE 5
           PBVal = PBVal - 1
+
       END SELECT
       GOSUB resetSeg
-    ELSEIF s.Type = 4 THEN GOTO GameOver
+
+    ELSEIF S.Type = 4 THEN GOTO GameOver
+
     ELSE GOSUB resetSeg
+
     END IF
   END IF
-
-  COLOR , s.Type
-  LOCATE s.Y, s.X
-  SELECT CASE s.Type
-    CASE 1: PRINT "1";
-    CASE 2: PRINT "%";
-    CASE 3: PRINT "3";
-    CASE 4: PRINT "!";
-    CASE 5: PRINT "-";
-  END SELECT
 RETURN
 
 resetSeg:
-  s.Y = -5
-  s.X = RND * ScreenWidth
-  s.Speed = RND
+  S.Y = -5
+  S.X = RND * ScreenWidth
+  S.Speed = RND
 
   SELECT CASE (RND)
 
     CASE IS >= .5  '50% chance of normal segments
-      s.Type = 1
+      S.Type = 1
 
     CASE IS >= .3  '20% chance of subtract segments
-      s.Type = 5
+      S.Type = 5
 
     CASE IS >= .2  '10% chance of red segments
-      s.Type = 4
+      S.Type = 4
 
     CASE IS >= .05 '15% chance of multi-segments
-      s.Type = 3
+      S.Type = 3
 
     CASE ELSE      '5% chance of green
-      s.Type = 2
+      S.Type = 2
 
   END SELECT
 RETURN
@@ -218,14 +239,14 @@ SUB Limit ()
   t# = TIMER
 END SUB
 
-SUB PRINTat (X%, Y%, s$)
+SUB PRINTat (X%, Y%, S$)
   'IF y% THEN
     DO: i% = i% + 1: LOOP UNTIL i% + X% >= 1
     LOCATE Y%, i% + X%
   'END IF
-  FOR i% = i% TO LEN(s$)
+  FOR i% = i% TO LEN(S$)
     IF POS(0) = ScreenWidth THEN EXIT FOR
-    PRINT MID$(s$, i%, 1);
+    PRINT MID$(S$, i%, 1);
   NEXT
 END SUB
 
