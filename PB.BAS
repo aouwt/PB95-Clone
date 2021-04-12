@@ -1,7 +1,7 @@
-DECLARE SUB WaitS (s!)
+DECLARE SUB WaitS (S!)
 DECLARE SUB PrintCentered (y%, t$)
 DECLARE FUNCTION ScanProgress% ()
-DECLARE SUB PRINTat (x%, y%, s$)
+DECLARE SUB PRINTat (x%, y%, S$)
 DECLARE SUB GetScreenDimentions (W%, H%)
 DECLARE SUB DispColors ()
 DECLARE SUB limit ()
@@ -12,7 +12,7 @@ WIDTH 80, 50
 
 CONST PBLen = 20, PBHalfLen = 10
 CONST interval = 1 / 30
-CONST TRUE = -1, FALSE = 0
+CONST True = -1, False = 0
 
 DIM SHARED ScreenWidth AS INTEGER
 DIM SHARED ScreenHeight AS INTEGER
@@ -22,16 +22,18 @@ TYPE segtype
   Type AS INTEGER
   x AS INTEGER
   y AS SINGLE
-  Speed AS SINGLE
+  speed AS SINGLE
 END TYPE
 
-DIM Segs(5) AS segtype, s AS segtype
+DIM Segs(5) AS segtype, S AS segtype
 DIM PBX AS INTEGER, PBY AS INTEGER
                                 
 FOR i% = LBOUND(Segs) TO UBOUND(Segs)
   'Segs(i%).x = ScreenWidth
   Segs(i%).y = ScreenHeight + 1
 NEXT
+
+RANDOMIZE TIMER
 
 DispColors
 DO
@@ -45,15 +47,15 @@ DO
 LOOP
 
 DO
-  IF (TIMER - t#) > interval THEN drawframe% = TRUE ELSE drawframe% = FALSE
+  IF (TIMER - t#) > interval THEN drawframe% = True ELSE drawframe% = False
   IF drawframe% THEN t# = TIMER: COLOR , 0: CLS
   CALL MousePoll(PBY, PBX, l%, r%)
   PBX = PBX - PBHalfLen
 
   FOR i% = LBOUND(Segs) TO UBOUND(Segs)
-    s = Segs(i%)
+    S = Segs(i%)
     GOSUB SegAction
-    Segs(i%) = s
+    Segs(i%) = S
   NEXT
 
   'COLOR , 11: PRINTat PBX, PBY + 1, SPACE$(PBVal)
@@ -117,7 +119,7 @@ RetryChr:
 
       END SELECT
 
-    LOOP UNTIL CSRLIN = 24
+    LOOP UNTIL CSRLIN = ScreenHeight - 1
 
     LOCATE , 1
     PRINT "Press space to run CHECKPROGRESS"
@@ -129,7 +131,8 @@ RetryChr:
       SELECT CASE INKEY$
         CASE ""
         CASE " "
-          a% = ScanProgress
+          IF ScanProgress%() THEN
+          END IF
         CASE ELSE
       END SELECT
     NEXT
@@ -143,13 +146,13 @@ END
 SegAction:
 
   IF drawframe% THEN
-    s.y = s.y + s.Speed
+    S.y = S.y + S.speed
 
-    IF s.y < 1 THEN RETURN
+    IF S.y < 1 THEN RETURN
 
-    COLOR , s.Type
-    LOCATE s.y, s.x
-    SELECT CASE s.Type
+    COLOR , S.Type
+    LOCATE S.y, S.x
+    SELECT CASE S.Type
       CASE 1: PRINT "1";
       CASE 2: PRINT "%";
       CASE 3: PRINT "3";
@@ -159,12 +162,13 @@ SegAction:
 
   END IF
 
-  IF s.y < 1 THEN RETURN
-  IF s.y >= ScreenHeight GOTO resetSeg
-  IF (INT(s.y) = PBY) AND (s.x >= PBX) AND (s.x <= PBX + PBLen) THEN
+  IF S.y < 1 THEN RETURN
+  IF S.y >= ScreenHeight GOTO resetSeg
+  IF (INT(S.y) = PBY) AND (S.x >= PBX) AND (S.x <= PBX + PBLen) THEN
 
-    IF s.x > PBX + PBVal THEN
-      SELECT CASE s.Type
+    IF S.x > PBX + PBVal THEN
+      SOUND 440, 1
+      SELECT CASE S.Type
 
         CASE 1
           PBVal = PBVal + 1
@@ -180,36 +184,44 @@ SegAction:
       END SELECT
       GOSUB resetSeg
 
-    ELSEIF s.Type = 4 THEN GOTO GameOver
+    ELSEIF S.Type = 4 THEN GOTO GameOver
 
-    ELSE GOSUB resetSeg
+    ELSE
+      SOUND 100, 1
+      GOSUB resetSeg
 
     END IF
   END IF
 RETURN
 
 resetSeg:
-  s.y = -5
-  s.x = RND * ScreenWidth
-  s.Speed = RND
+  S.y = -5
+  S.x = RND * ScreenWidth
+  S.speed = RND
 
   SELECT CASE (RND)
 
-    CASE IS >= .5  '50% chance of normal segments
-      s.Type = 1
+    CASE IS <= .7             '70% chance
+      S.Type = 1              'Normal
+    
 
-    CASE IS >= .3  '20% chance of subtract segments
-      s.Type = 5
+    CASE IS <= .75            '5% chance
+      S.Type = 4              'Red
+      S.speed = S.speed * 1.5 '1.5x speed
 
-    CASE IS >= .2  '10% chance of red segments
-      s.Type = 4
 
-    CASE IS >= .05 '15% chance of multi-segments
-      s.Type = 3
+    CASE IS <= .9             '15% chance
+      S.Type = 5              'Pink
+      
+    
+    CASE IS <= .99            '9% chance
+      S.Type = 3              'Multi
+      S.speed = S.speed * 2   '2x speed
 
-    CASE ELSE      '5% chance of green
-      s.Type = 2
 
+    CASE ELSE                 '1% chance
+      S.Type = 2              'Green
+      S.speed = S.speed * 3   '3x speed
   END SELECT
 RETURN
 
@@ -277,14 +289,14 @@ SUB limit ()
   t# = TIMER
 END SUB
 
-SUB PRINTat (x%, y%, s$)
+SUB PRINTat (x%, y%, S$)
   'IF y% THEN
     DO: i% = i% + 1: LOOP UNTIL i% + x% >= 1
     LOCATE y%, i% + x%
   'END IF
-  FOR i% = i% TO LEN(s$)
+  FOR i% = i% TO LEN(S$)
     IF POS(0) = ScreenWidth THEN EXIT FOR
-    PRINT MID$(s$, i%, 1);
+    PRINT MID$(S$, i%, 1);
   NEXT
 END SUB
 
@@ -335,6 +347,8 @@ FUNCTION ScanProgress% ()
   COLOR , 4: PRINT SPACE$(cpu!);
 
   IF cpu! >= mid% THEN
+    ScanProgress% = False
+
     COLOR 15, 0
     PrintCentered ScreenHeight / 3, "You lose!"
 
@@ -344,6 +358,8 @@ FUNCTION ScanProgress% ()
     PrintCentered ScreenHeight / 1.5, "Press any key to continue"
 
   ELSE
+    ScanProgress% = True
+
     COLOR 15, 0
     PrintCentered ScreenHeight / 3, "You win!"
 
@@ -356,8 +372,8 @@ FUNCTION ScanProgress% ()
   SLEEP
 END FUNCTION
 
-SUB WaitS (s!)
+SUB WaitS (S!)
   t# = TIMER
-  WHILE (TIMER - t#) < s!: WEND
+  WHILE (TIMER - t#) < S!: WEND
 END SUB
 
