@@ -385,7 +385,7 @@ SUB RandomSeg (S AS SegType)
   SHARED SegChance() AS SegChanceType
 
   S.X = RND * ScreenWidth
-  S.Y = ScreenHeight / -2
+  S.Y = ScreenHeight / -10
   S.Speed = RND
 
   C! = RND
