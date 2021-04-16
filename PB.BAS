@@ -1,71 +1,6 @@
-DECLARE SUB RandomSeg (S AS ANY)
-DECLARE SUB Fill (a() AS INTEGER, v AS INTEGER)
-DECLARE SUB PrintPB ()
-DECLARE SUB WaitS (S!)
-DECLARE SUB PrintCentered (Y%, t$)
-DECLARE FUNCTION ScanProgress% ()
-DECLARE SUB PrintAt (X%, Y%, S$)
-DECLARE SUB GetScreenDimentions (W%, H%)
-DECLARE SUB DispColors ()
-DECLARE SUB limit ()
-'$INCLUDE: 'MOUSE.BI'
-ON ERROR RESUME NEXT
-
-WIDTH 80, 50
-
-'#### CONFIGURATION ###################
-
-CONST PBLen = 20     'How wide the progress bar is
-
-CONST FPS = 60       'How many times per second the game state updates. Slower
-                     'computers need lower FPS to make it run smoothly.
-                     'Best kept at 60 (for modern-ish PCs) or 30 for "retro"
-                     'ones, and 10 for that old XT you happened to find in a
-                     'warehouse in the middle of nowhere
-
-CONST GameSpeed = 1  'Game speed multiplier.
-
-'######################################
-
-CONST Interval = 1 / FPS
-CONST ActualGameSpeed = GameSpeed * (15 / FPS)
-CONST PBHalfLen = PBLen / 2
-CONST True = -1, False = 0
-
-DIM SHARED ScreenWidth AS INTEGER
-DIM SHARED ScreenHeight AS INTEGER
-CALL GetScreenDimentions(ScreenWidth, ScreenHeight)
-'GOTO CheckProgress
-TYPE SegType
-  Type   AS INTEGER
-  X      AS SINGLE
-  Y      AS SINGLE
-  Speed  AS SINGLE
-  XSpeed AS SINGLE
-END TYPE
-
-DIM Segs(5) AS SegType, S AS SegType
-DIM PBX AS INTEGER, PBY AS INTEGER
-DIM PBVal AS INTEGER
-DIM PB(PBLen) AS INTEGER
-                                
-FOR i% = LBOUND(Segs) TO UBOUND(Segs)
-  'Segs(i%).x = ScreenWidth
-  Segs(i%).Y = ScreenHeight + 1
-NEXT
-
-RANDOMIZE TIMER
-
-DispColors
-DO
-  SELECT CASE INKEY$
-    CASE " "
-      END
-    CASE ""
-    CASE ELSE
-      EXIT DO
-  END SELECT
-LOOP
+DECLARE SUB LoadChance ()
+REM $INCLUDE: 'MOUSE.BI'
+REM $INCLUDE: 'INIT.BI'
 
 DO
   IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
@@ -89,6 +24,15 @@ GameOver:
   'SYSTEM
   IF PBVal >= PBLen THEN
 
+    PBX = (ScreenWidth - PBLen) / 2
+    PBY = ScreenHeight / 5
+
+    COLOR 0, 7
+    LOCATE PBY - 1, PBX - 1: PRINT SPACE$(PBLen + 2);
+    LOCATE PBY, PBX - 1:     PRINT SPACE$(PBLen + 2);
+    LOCATE PBY + 1, PBX - 1: PRINT SPACE$(PBLen + 2);
+    PrintPB
+
     OrangeSegs% = 0
     FOR i% = 0 TO PBLen 'Check for orange segs
       IF PB(i%) = 6 THEN
@@ -97,7 +41,7 @@ GameOver:
 
     IF OrangeSegs% THEN RESTORE Data_CheckMark ELSE RESTORE Data_Perfectionist
 
-    READ W%, H%
+    READ w%, H%
     Y% = (ScreenHeight - H%) / 2
 
 
@@ -138,29 +82,17 @@ GameOver:
     CLS
 
     DO
-
-RetryChr:
-      c% = RND * 255
-
-      SELECT CASE c%
-
-        CASE 0 TO 12, 14 TO 32
-          GOTO RetryChr
-
-        CASE ELSE
-          PRINT CHR$(c%);
-
-      END SELECT
-
-    LOOP UNTIL CSRLIN = ScreenHeight - 3
-
+      PRINT CHR$(RND * 127 + 32);
+      IF POS(0) >= r% THEN PRINT : r% = RND * ScreenWidth
+    LOOP UNTIL CSRLIN = ScreenHeight - 10
+                                         
     PRINT
     LOCATE , 1
     PRINT "Press space to run CHECKPROGRESS"
     PRINT "Press any other key to try again"
 
-    FOR i% = 0 TO 1000
-      SOUND (999 - i%) / 2, .025
+    FOR i% = 1000 TO 37 STEP -1
+      SOUND i%, .025
       SOUND 0, .025
     NEXT
 
@@ -168,8 +100,7 @@ RetryChr:
       SELECT CASE INKEY$
         CASE ""
         CASE " "
-          IF ScanProgress%() THEN
-          END IF
+          IF ScanProgress%() THEN SYSTEM ELSE SYSTEM 'TODO: Implement lives
         CASE ELSE
           EXIT DO
       END SELECT
@@ -197,9 +128,9 @@ SegAction:
       CASE 4: PRINT "!";
       CASE 5: PRINT "-";
       CASE 6: PRINT " ";
-      CASE ELSE
-        S.Type = ((S.Type + 1) MOD 9) + 7
-        COLOR , S.Type - 7
+      CASE 7: PRINT "0";
+      CASE 8:
+        COLOR , RND * 7
         PRINT "?";
     END SELECT
 
@@ -207,16 +138,16 @@ SegAction:
 
   IF S.Y < 1 THEN RETURN
   IF S.Y >= ScreenHeight GOTO ResetSeg
-  IF (INT(S.Y) = PBY) AND (S.X >= PBX) AND (S.X <= PBX + PBLen) THEN
+  IF (INT(S.Y) = PBY) AND (S.X >= PBX) AND (S.X <= (PBX + PBLen)) THEN
 
-    IF S.X > PBX + PBVal THEN
-      SOUND 440, 1
+    IF S.X >= (PBX + PBVal) THEN
 CheckSeg:
       SELECT CASE S.Type
 
         CASE 1
           PBVal = PBVal + 1
           PB(PBVal) = 1
+          SOUND 440, 1
 
         CASE 2
           PBVal = PBLen
@@ -227,18 +158,28 @@ CheckSeg:
           PB(PBVal - 2) = 1
           PB(PBVal - 1) = 1
           PB(PBVal) = 1
+          SOUND 880, .5
+          SOUND 0, .5
+          SOUND 880, .5
         
         CASE 4
           CALL Fill(PB(), 4)
           PrintPB
+          WaitS .5
           GOTO GameOver
 
         CASE 5
           PBVal = PBVal - 1
+          SOUND 440, .5
+          SOUND 220, .5
 
         CASE 6
           PBVal = PBVal + 1
           PB(PBVal) = 6
+          SOUND 440, 1
+
+        CASE 7
+          SOUND 110, .1
 
         CASE ELSE
           CALL RandomSeg(S)
@@ -312,6 +253,27 @@ PrintEndRoll:
 
 RETURN
 
+
+Data_DefaultChance:
+DATA 100, 1
+DATA   1, 3
+DATA   5, 2
+DATA  10, 1.5
+DATA  15, 1  
+DATA  25, 1
+DATA  20, 1 
+DATA  20, 1 
+
+Data_HardcoreChance:
+DATA 100, 3   'Normal
+DATA   0, 1   'Green
+DATA   5, 5   'Multi
+DATA  50, 1   'Red
+DATA  20, 1   'Pink
+DATA  70, 1   'Orange
+DATA  30, 1   'Null
+DATA  25, 1.5 'Random
+
 SUB DispColors ()
   CLS
   FOR i% = 0 TO 15
@@ -333,29 +295,42 @@ SUB Fill (a() AS INTEGER, v AS INTEGER)
   NEXT
 END SUB
 
-SUB GetScreenDimentions (W%, H%)
-  W% = 0
+SUB GetScreenDimentions (w%, H%)
+  w% = 0
   H% = 0
 
   LOCATE 1, 1
   DO
     H% = H% + 1
-    COLOR SCREEN(H%, 1, 1): PRINT CHR$(SCREEN(H%, 1))
+    PRINT
+    'COLOR SCREEN(H%, 1, 1): PRINT CHR$(SCREEN(H%, 1))
   LOOP UNTIL CSRLIN < H%
   H% = H% - 1
 
   LOCATE 1, 1
   DO
-    W% = W% + 1
-    COLOR SCREEN(1, W%, 1): PRINT CHR$(SCREEN(1, W%));
-  LOOP UNTIL POS(0) < W%
-  W% = W% - 1
+    w% = w% + 1
+    PRINT " ";
+    'COLOR SCREEN(1, w%, 1): PRINT CHR$(SCREEN(1, w%));
+  LOOP UNTIL POS(0) < w%
+  w% = w% - 1
 END SUB
 
 SUB limit ()
   STATIC t#
   WHILE (TIMER - Interval <= t#): WEND
   t# = TIMER
+END SUB
+
+SUB LoadChance ()
+  SHARED SegChance() AS SegChanceType
+
+  FOR i% = 1 TO 8
+    READ SegChance(i%).C, SegChance(i%).S
+    'PRINT SegChance(i%).C, SegChance(i%).S
+  NEXT
+
+  CALL SetChance(SegChance())
 END SUB
 
 SUB PrintAt (X%, Y%, S$)
@@ -375,20 +350,24 @@ SUB PrintCentered (Y%, t$)
 END SUB
 
 SUB PrintPB ()
-  SHARED PBX AS INTEGER, PBY AS INTEGER
+  SHARED PBX  AS INTEGER, PBY   AS INTEGER
   SHARED PB() AS INTEGER, PBVal AS INTEGER
 
-  p$ = LTRIM$(STR$(INT((PBVal / PBLen) * 100)))
-  px% = PBHalfLen - LEN(p$) / 2
-  p$ = SPACE$(px%) + p$ + SPACE$(px%)
+  X% = PBX - 1 'Don't know why this works...
 
-  IF PBX <= 0 THEN
-    i% = ABS(PBX)
-    PBX = 1
+  p$ = LTRIM$(STR$(INT((PBVal / PBLen) * 100))) + "%"
+  px% = PBHalfLen - LEN(p$) / 2
+  p$ = SPACE$(px%) + p$ + SPACE$(px% + 1)
+
+  IF PBVal > PBLen THEN PBVal = PBLen
+
+  IF X% <= 0 THEN
+    i% = -X%
+    X% = 1
   ELSE i% = 1
   END IF
 
-  LOCATE PBY, PBX
+  LOCATE PBY, X%
   FOR i% = i% TO PBVal
     COLOR 15, PB(i%)
     PRINT MID$(p$, i%, 1);
@@ -396,45 +375,36 @@ SUB PrintPB ()
   NEXT
 
   COLOR 15, 7
-  FOR i% = i% TO PBLen
+  FOR i% = i% TO PBLen + 1
     IF POS(0) >= ScreenWidth THEN EXIT FOR
     PRINT MID$(p$, i%, 1);
   NEXT
 END SUB
 
 SUB RandomSeg (S AS SegType)
-  SELECT CASE (RND)
+  SHARED SegChance() AS SegChanceType
 
-    CASE IS <= .5             '50% chance
-      S.Type = 1              'Normal
+  S.X = RND * ScreenWidth
+  S.Y = ScreenHeight / -2
+  S.Speed = RND
 
+  C! = RND
 
-    CASE IS <= .65            '15% chance
-      S.Type = 6              'Orange
+  FOR i% = 1 TO 7
+    IF C! <= SegChance(i%).EC THEN
 
+      S.Type = i%
+      S.Speed = S.Speed * SegChance(i%).S
 
-    CASE IS <= .7             '5% chance
-      S.Type = 7              'Random
+      EXIT SUB
 
+    END IF
+  NEXT
 
-    CASE IS <= .75            '5% chance
-      S.Type = 4              'Red
-      S.Speed = S.Speed * 1.5 '1.5x speed
-
-
-    CASE IS <= .9             '15% chance
-      S.Type = 5              'Pink
-
-
-    CASE IS <= .999           '9.9% chance
-      S.Type = 3              'Multi
-      S.Speed = S.Speed * 2   '2x speed
-
-
-    CASE ELSE                 '1% chance
-      S.Type = 2              'Green
-      S.Speed = S.Speed * 3 + 1 '3x+1 speed
-  END SELECT
+  'if it doesnt match those then it must match
+  'the last one
+  S.Type = 8
+  S.Speed = S.Speed * SegChance(8).S
 END SUB
 
 FUNCTION ScanProgress% ()
@@ -503,6 +473,22 @@ FUNCTION ScanProgress% ()
 
   SLEEP
 END FUNCTION
+
+SUB SetChance (Chances() AS SegChanceType)
+  Mult# = 0
+  FOR i% = 1 TO 8
+    Mult# = Mult# + Chances(i%).C
+    'PRINT Mult#
+  NEXT
+
+  'Do the first one to prevent Out Of Range errors   
+  Chances(1).EC = (Chances(1).C / Mult#)
+
+  FOR i% = 2 TO 8
+    Chances(i%).EC = (Chances(i%).C / Mult#) + Chances(i% - 1).EC
+    'PRINT Chances(i%).EC
+  NEXT
+END SUB
 
 SUB WaitS (S!)
   t# = TIMER
