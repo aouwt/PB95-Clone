@@ -1,7 +1,7 @@
 DECLARE SUB LoadChance ()
 REM $INCLUDE: 'MOUSE.BI'
 REM $INCLUDE: 'INIT.BI'
-
+StartTime# = TIMER
 DO
   IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
   IF DrawFrame% THEN t# = TIMER: COLOR , 0: CLS
@@ -22,6 +22,7 @@ LOOP UNTIL PBVal >= PBLen
 
 GameOver:
   'SYSTEM
+  EndTime# = TIMER
   IF PBVal >= PBLen THEN
 
     PBX = (ScreenWidth - PBLen) / 2
@@ -116,13 +117,15 @@ SegAction:
 
   IF DrawFrame% THEN
     S.Y = S.Y + S.Speed
+    S.X = S.X + S.XSpeed
 
+    IF (S.X <= 1) OR (S.X >= ScreenWidth) GOTO ResetSeg
     IF S.Y < 1 THEN RETURN
 
     COLOR , S.Type
     LOCATE S.Y, S.X
     SELECT CASE S.Type
-      CASE 1: PRINT "1";
+      CASE 1: PRINT " ";
       CASE 2: PRINT "%";
       CASE 3: PRINT "3";
       CASE 4: PRINT "!";
@@ -147,7 +150,8 @@ CheckSeg:
         CASE 1
           PBVal = PBVal + 1
           PB(PBVal) = 1
-          SOUND 440, 1
+          SOUND 220, .5
+          SOUND 440, .5
 
         CASE 2
           PBVal = PBLen
@@ -158,10 +162,10 @@ CheckSeg:
           PB(PBVal - 2) = 1
           PB(PBVal - 1) = 1
           PB(PBVal) = 1
-          SOUND 880, .5
+          SOUND 440, .5
           SOUND 0, .5
-          SOUND 880, .5
-        
+          SOUND 440, .5
+
         CASE 4
           CALL Fill(PB(), 4)
           PrintPB
@@ -176,10 +180,12 @@ CheckSeg:
         CASE 6
           PBVal = PBVal + 1
           PB(PBVal) = 6
-          SOUND 440, 1
+          SOUND 220, .25
+          SOUND 440, .75
 
         CASE 7
           SOUND 110, .1
+          SOUND 37, .2
 
         CASE ELSE
           CALL RandomSeg(S)
@@ -259,10 +265,10 @@ DATA 100, 1
 DATA   1, 3
 DATA   5, 2
 DATA  10, 1.5
-DATA  15, 1  
+DATA  15, 1 
 DATA  25, 1
-DATA  20, 1 
-DATA  20, 1 
+DATA  20, 1
+DATA  20, 1
 
 Data_HardcoreChance:
 DATA 100, 3   'Normal
@@ -387,6 +393,7 @@ SUB RandomSeg (S AS SegType)
   S.X = RND * ScreenWidth
   S.Y = ScreenHeight / -10
   S.Speed = RND
+  S.XSpeed = (RND - .5) * .05
 
   C! = RND
 
@@ -481,7 +488,7 @@ SUB SetChance (Chances() AS SegChanceType)
     'PRINT Mult#
   NEXT
 
-  'Do the first one to prevent Out Of Range errors   
+  'Do the first one to prevent Out Of Range errors  
   Chances(1).EC = (Chances(1).C / Mult#)
 
   FOR i% = 2 TO 8
