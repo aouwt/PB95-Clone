@@ -12,11 +12,12 @@ DECLARE SUB SetChance (Chances() AS ANY)
 
 
 TYPE SegType
-  Type   AS INTEGER
-  X      AS SINGLE
-  Y      AS SINGLE
-  Speed  AS SINGLE
-  XSpeed AS SINGLE
+  Type    AS INTEGER
+  X       AS SINGLE
+  Y       AS SINGLE
+  Speed   AS SINGLE
+  XSpeed  AS SINGLE
+  SwTime  AS SINGLE
 END TYPE
 
 TYPE SegChanceType

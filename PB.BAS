@@ -1,3 +1,4 @@
+DECLARE FUNCTION Round! (N!, Places%)
 DECLARE SUB LoadChance ()
 REM $INCLUDE: 'MOUSE.BI'
 REM $INCLUDE: 'INIT.BI'
@@ -5,7 +6,7 @@ StartTime# = TIMER
 DO
   IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
   IF DrawFrame% THEN t# = TIMER: COLOR , 0: CLS
-  CALL MousePoll(PBY, PBX, l%, r%)
+  CALL MousePoll(PBY, PBX, l%, R%)
   PBX = PBX - PBHalfLen
 
   FOR i% = LBOUND(Segs) TO UBOUND(Segs)
@@ -29,9 +30,9 @@ GameOver:
     PBY = ScreenHeight / 5
 
     COLOR 0, 7
-    LOCATE PBY - 1, PBX - 1: PRINT SPACE$(PBLen + 2);
-    LOCATE PBY, PBX - 1:     PRINT SPACE$(PBLen + 2);
-    LOCATE PBY + 1, PBX - 1: PRINT SPACE$(PBLen + 2);
+    LOCATE PBY - 1, PBX - 2: PRINT SPACE$(PBLen + 2);
+    LOCATE PBY, PBX - 2:     PRINT SPACE$(PBLen + 2);
+    LOCATE PBY + 1, PBX - 2: PRINT SPACE$(PBLen + 2);
     PrintPB
 
     OrangeSegs% = 0
@@ -84,7 +85,7 @@ GameOver:
 
     DO
       PRINT CHR$(RND * 127 + 32);
-      IF POS(0) >= r% THEN PRINT : r% = RND * ScreenWidth
+      IF POS(0) >= R% THEN PRINT : R% = RND * ScreenWidth
     LOOP UNTIL CSRLIN = ScreenHeight - 10
                                          
     PRINT
@@ -118,6 +119,12 @@ SegAction:
   IF DrawFrame% THEN
     S.Y = S.Y + S.Speed
     S.X = S.X + S.XSpeed
+
+    IF S.XSpeed THEN
+      IF (S.Y MOD S.SwTime) = 0 THEN
+        S.XSpeed = S.XSpeed * -1
+      END IF
+    END IF
 
     IF (S.X <= 1) OR (S.X >= ScreenWidth) GOTO ResetSeg
     IF S.Y < 1 THEN RETURN
@@ -245,7 +252,7 @@ DATA     " ° "
 
 PrintEndRoll:
 
-  PPts% = (OrangeSegs% / PBLen) * 1000
+  PPts% = (PBLen - OrangeSegs%) * 1000
   Time# = (EndTime# - StartTime#)
   
   IF Time# >= 60 THEN Time# = 60
@@ -262,10 +269,10 @@ RETURN
 
 Data_DefaultChance:
 DATA 100, 1
-DATA   1, 3
+DATA  .1, 3
 DATA   5, 2
 DATA  10, 1.5
-DATA  15, 1 
+DATA  15, 1
 DATA  25, 1
 DATA  20, 1
 DATA  20, 1
@@ -392,8 +399,6 @@ SUB RandomSeg (S AS SegType)
 
   S.X = RND * ScreenWidth
   S.Y = ScreenHeight / -10
-  S.Speed = RND
-  S.XSpeed = (RND - .5) * .05
 
   C! = RND
 
@@ -401,8 +406,9 @@ SUB RandomSeg (S AS SegType)
     IF C! <= SegChance(i%).EC THEN
 
       S.Type = i%
-      S.Speed = S.Speed * SegChance(i%).S
-
+      S.Speed = RND * SegChance(i%).S
+      S.XSpeed = Round((RND - .5) * S.Speed, 2)
+      S.SwTime = RND * S.Speed * 10
       EXIT SUB
 
     END IF
@@ -411,8 +417,16 @@ SUB RandomSeg (S AS SegType)
   'if it doesnt match those then it must match
   'the last one
   S.Type = 8
-  S.Speed = S.Speed * SegChance(8).S
+  S.Speed = RND * SegChance(8).S
+  S.XSpeed = Round((RND - .5) * S.Speed, 2)
+  S.SwTime = (RND + 2) * 100
 END SUB
+
+FUNCTION Round! (N!, Places%)
+  N! = N! * Places%
+  N% = N!
+  IF (N! - N%) >= .5 THEN Round = (N% + 1) / Places% ELSE Round = N% / Places%
+END FUNCTION
 
 FUNCTION ScanProgress% ()
 
@@ -488,7 +502,7 @@ SUB SetChance (Chances() AS SegChanceType)
     'PRINT Mult#
   NEXT
 
-  'Do the first one to prevent Out Of Range errors  
+  'Do the first one to prevent Out Of Range errors
   Chances(1).EC = (Chances(1).C / Mult#)
 
   FOR i% = 2 TO 8
