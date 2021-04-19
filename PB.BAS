@@ -1,11 +1,15 @@
-DECLARE FUNCTION Round! (N!, Places%)
-DECLARE SUB LoadChance ()
 REM $INCLUDE: 'MOUSE.BI'
 REM $INCLUDE: 'INIT.BI'
+
 StartTime# = TIMER
 DO
-  IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
-  IF DrawFrame% THEN t# = TIMER: COLOR , 0: CLS
+  IF DrawFrame% THEN
+    t# = TIMER
+    'DrawFrame% = False
+    COLOR , 0
+    CLS
+  END IF
+
   CALL MousePoll(PBY, PBX, l%, R%)
   PBX = PBX - PBHalfLen
 
@@ -16,10 +20,9 @@ DO
   NEXT
 
   PrintPB
-LOOP UNTIL PBVal >= PBLen
 
-
-
+  IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
+LOOP 'UNTIL PBVal >= PBLen
 
 GameOver:
   'SYSTEM
@@ -149,6 +152,8 @@ SegAction:
   IF S.Y < 1 THEN RETURN
   IF S.Y >= ScreenHeight GOTO ResetSeg
   IF (INT(S.Y) = PBY) AND (S.X >= PBX) AND (S.X <= (PBX + PBLen)) THEN
+    
+    DrawFrame% = True
 
     IF S.X >= (PBX + PBVal) THEN
 CheckSeg:
@@ -211,12 +216,59 @@ CheckSeg:
   END IF
 RETURN
 
+
+
+
+DialogAction:
+  IF D.Type = 0 THEN RETURN
+
+  SELECT CASE D.Type
+
+    CASE 1
+      COLOR 0, 7:   PRINT "⁄ƒAnnoying Popupƒø"
+      LOCATE , D.X: PRINT "≥ ";
+      COLOR 14:      PRINT "∞€€€∞";
+      COLOR 0:            PRINT "           ≥"
+      LOCATE , D.X: PRINT "≥";
+      COLOR 14:      PRINT "€›€ﬁ€";
+      COLOR 0:            PRINT "           ≥"
+      LOCATE , D.X: PRINT "≥";
+      COLOR 14:      PRINT "€‹ﬂ‹€";
+      COLOR 0:            PRINT "     <OK>  ≥"
+      LOCATE , D.X: PRINT "≥ ";
+      COLOR 14:      PRINT "∞€€€∞";
+      COLOR 0:            PRINT "           ≥"
+      LOCATE , D.X: PRINT "¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ"
+  END SELECT
+
+
+
 ResetSeg:
   S.Y = -5
   S.X = RND * ScreenWidth
   S.Speed = RND * ActualGameSpeed + .5 '+5 to keep them moving
   CALL RandomSeg(S)
 RETURN
+
+
+
+PrintEndRoll:
+
+  PPts% = (PBLen - OrangeSegs%) * 1000
+  Time# = (EndTime# - StartTime#)
+  
+  IF Time# >= 60 THEN Time# = 60
+  TPts% = LOG((60 - Time#)) * 2000
+
+  ERY% = (ScreenHeight / 1.4)
+  PrintCentered ERY%, "Progress points:" + STR$(PPts%)
+  PrintCentered ERY% + 2, "Time bonus:" + STR$(TPts%)
+  PrintCentered ERY% + 4, "-----"
+  PrintCentered ERY% + 6, "Total points:" + STR$(PPts% + TPts%)
+
+RETURN
+
+
 
 
 Data_CheckMark:
@@ -250,22 +302,6 @@ DATA   " ∞±±±∞ "
 DATA     " ∞ "
 
 
-PrintEndRoll:
-
-  PPts% = (PBLen - OrangeSegs%) * 1000
-  Time# = (EndTime# - StartTime#)
-  
-  IF Time# >= 60 THEN Time# = 60
-  TPts% = LOG((60 - Time#)) * 2000
-
-  ERY% = (ScreenHeight / 1.4)
-  PrintCentered ERY%, "Progress points:" + STR$(PPts%)
-  PrintCentered ERY% + 2, "Time bonus:" + STR$(TPts%)
-  PrintCentered ERY% + 4, "-----"
-  PrintCentered ERY% + 6, "Total points:" + STR$(PPts% + TPts%)
-
-RETURN
-
 
 Data_DefaultChance:
 DATA 100, 1
@@ -278,14 +314,14 @@ DATA  20, 1
 DATA  20, 1
 
 Data_HardcoreChance:
-DATA 100, 3   'Normal
-DATA   0, 1   'Green
-DATA   5, 5   'Multi
-DATA  50, 1   'Red
-DATA  20, 1   'Pink
-DATA  70, 1   'Orange
-DATA  30, 1   'Null
-DATA  25, 1.5 'Random
+DATA 100, 3
+DATA   0, 1
+DATA   5, 5
+DATA  50, 1 
+DATA  20, 1  
+DATA  70, 1  
+DATA  30, 1
+DATA  25, 1.5
 
 SUB DispColors ()
   CLS
@@ -346,14 +382,27 @@ SUB LoadChance ()
   CALL SetChance(SegChance())
 END SUB
 
+SUB LoadDialogs ()
+
+END SUB
+
 SUB PrintAt (X%, Y%, S$)
-  'IF y% THEN
-    DO: i% = i% + 1: LOOP UNTIL i% + X% >= 1
-    LOCATE Y%, i% + X%
-  'END IF
+  
+  DO: i% = i% + 1: LOOP UNTIL i% + X% >= 1
+  X% = i% + X%
+
+  LOCATE Y%, X%
+
   FOR i% = i% TO LEN(S$)
     IF POS(0) = ScreenWidth THEN EXIT FOR
-    PRINT MID$(S$, i%, 1);
+
+    C$ = MID$(S$, i%, 1)
+    IF C$ = CHR$(13) THEN
+      IF CSRLIN = ScreenHeight THEN EXIT FOR
+      LOCATE CSRLIN + 1, X%
+
+    ELSE PRINT C$;
+    END IF
   NEXT
 END SUB
 

@@ -9,7 +9,8 @@ DECLARE SUB GetScreenDimentions (w%, H%)
 DECLARE SUB DispColors ()
 DECLARE SUB limit ()
 DECLARE SUB SetChance (Chances() AS ANY)
-
+DECLARE FUNCTION Round! (N!, Places%)
+DECLARE SUB LoadChance ()
 
 TYPE SegType
   Type    AS INTEGER
@@ -26,6 +27,13 @@ TYPE SegChanceType
   S  AS SINGLE 'Speed multiplier
 END TYPE
 
+TYPE DialogType
+  Type AS INTEGER
+  X    AS INTEGER
+  Y    AS INTEGER
+END TYPE
+
+
 REM $INCLUDE: 'CONFIG.BI'
 
 CONST Interval = 1 / FPS
@@ -35,6 +43,8 @@ CONST True = -1, False = 0
 
 DIM Segs(5)      AS SegType
 DIM S            AS SegType
+DIM Dialogs(10)  AS DialogType
+DIM D            AS DialogType
 DIM SegChance(8) AS SegChanceType
 
 DIM PBX       AS INTEGER
@@ -42,7 +52,7 @@ DIM PBY       AS INTEGER
 DIM PBVal     AS INTEGER
 DIM PB(PBLen) AS INTEGER
 
-DIM SHARED ScreenWidth AS INTEGER
+DIM SHARED ScreenWidth  AS INTEGER
 DIM SHARED ScreenHeight AS INTEGER
 CALL GetScreenDimentions(ScreenWidth, ScreenHeight)
 
