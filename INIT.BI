@@ -56,6 +56,9 @@ DIM SHARED ScreenWidth  AS INTEGER
 DIM SHARED ScreenHeight AS INTEGER
 CALL GetScreenDimentions(ScreenWidth, ScreenHeight)
 
+DIM SHARED MouseX AS INTEGER
+DIM SHARED MouseY AS INTEGER
+
 ON ERROR RESUME NEXT
 
 FOR i% = LBOUND(Segs) TO UBOUND(Segs)

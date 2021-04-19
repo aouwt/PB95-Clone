@@ -1,17 +1,39 @@
+DECLARE SUB Prt (S$)
 REM $INCLUDE: 'MOUSE.BI'
 REM $INCLUDE: 'INIT.BI'
-
+PBX = 1
+PBY = 1
 StartTime# = TIMER
 DO
   IF DrawFrame% THEN
-    t# = TIMER
+    T# = TIMER
     'DrawFrame% = False
     COLOR , 0
     CLS
   END IF
 
-  CALL MousePoll(PBY, PBX, l%, R%)
-  PBX = PBX - PBHalfLen
+  CALL MousePoll(MouseY, MouseX, L%, R%)
+
+  COLOR 15: LOCATE MouseY, MouseX: PRINT "˛";
+
+
+  IF L% THEN
+    IF MouseLock% = False THEN
+      IF (MouseY = PBY) AND (MouseX >= PBX) AND (MouseX <= PBX + PBLen) THEN
+
+        MouseLock% = MouseX - PBX
+
+      END IF
+    END IF
+  ELSE MouseLock% = False
+  END IF
+
+  IF MouseLock% THEN
+    PBX = MouseX - MouseLock%
+    PBY = MouseY
+  END IF
+
+
 
   FOR i% = LBOUND(Segs) TO UBOUND(Segs)
     S = Segs(i%)
@@ -21,7 +43,9 @@ DO
 
   PrintPB
 
-  IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
+  GOSUB DialogAction
+
+  IF (TIMER - T#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
 LOOP 'UNTIL PBVal >= PBLen
 
 GameOver:
@@ -56,15 +80,15 @@ GameOver:
       IF i% = H% THEN
         COLOR 15, 0
         IF OrangeSegs% THEN
-          l$ = LTRIM$(STR$(INT((OrangeSegs% / PBLen) * 100))) + "%"
+          L$ = LTRIM$(STR$(INT((OrangeSegs% / PBLen) * 100))) + "%"
         ELSE
-          l$ = "Perfectionist"
+          L$ = "Perfectionist"
         END IF
 
       ELSE
-        READ l$
+        READ L$
       END IF
-      PrintCentered Y% + i%, l$
+      PrintCentered Y% + i%, L$
 
     NEXT
     GOSUB PrintEndRoll
@@ -220,26 +244,53 @@ RETURN
 
 
 DialogAction:
-  IF D.Type = 0 THEN RETURN
+  IF D.Type = 0 THEN
+    IF RND THEN
+      D.Type = 1
+      D.X = RND * ScreenWidth
+      D.Y = RND * ScreenHeight
+    END IF
+
+    RETURN
+  END IF
+
+  IF DrawFrame% THEN
+    LOCATE D.Y, D.X
+
+    SELECT CASE D.Type
+
+      CASE 1
+        COLOR 0, 7:             Prt "⁄ƒAnnoying Popupƒø"
+        LOCATE CSRLIN + 1, D.X: Prt "≥ "
+        COLOR 14:                 Prt "∞€€€∞"
+        COLOR 0:                       Prt "          ≥"
+        LOCATE CSRLIN + 1, D.X: Prt "≥"
+        COLOR 14:                Prt "€›€ﬁ€"
+        COLOR 0:                      Prt "           ≥"
+        LOCATE CSRLIN + 1, D.X: Prt "≥"
+        COLOR 14:                Prt "€‹ﬂ‹€"
+        COLOR 0:                      Prt "     <OK>  ≥"
+        LOCATE CSRLIN + 1, D.X: Prt "≥"
+        COLOR 14:                Prt "∞€€€∞"
+        COLOR 0:                      Prt "           ≥"
+        LOCATE CSRLIN + 1, D.X: Prt "¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ"
+    END SELECT
+  END IF
+
+  IF (L%) AND (MouseLock% = False) THEN
+    X% = MouseX - D.X
+    Y% = MouseY - D.Y
+  ELSE
+    X% = 0
+    Y% = 0
+  END IF
 
   SELECT CASE D.Type
-
     CASE 1
-      COLOR 0, 7:   PRINT "⁄ƒAnnoying Popupƒø"
-      LOCATE , D.X: PRINT "≥ ";
-      COLOR 14:      PRINT "∞€€€∞";
-      COLOR 0:            PRINT "           ≥"
-      LOCATE , D.X: PRINT "≥";
-      COLOR 14:      PRINT "€›€ﬁ€";
-      COLOR 0:            PRINT "           ≥"
-      LOCATE , D.X: PRINT "≥";
-      COLOR 14:      PRINT "€‹ﬂ‹€";
-      COLOR 0:            PRINT "     <OK>  ≥"
-      LOCATE , D.X: PRINT "≥ ";
-      COLOR 14:      PRINT "∞€€€∞";
-      COLOR 0:            PRINT "           ≥"
-      LOCATE , D.X: PRINT "¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ"
+      IF (Y% = 4) AND (X% >= 12) AND (X% <= 15) THEN D.Type = 0
   END SELECT
+
+RETURN
 
 
 
@@ -317,9 +368,9 @@ Data_HardcoreChance:
 DATA 100, 3
 DATA   0, 1
 DATA   5, 5
-DATA  50, 1 
-DATA  20, 1  
-DATA  70, 1  
+DATA  50, 1
+DATA  20, 1 
+DATA  70, 1 
 DATA  30, 1
 DATA  25, 1.5
 
@@ -366,9 +417,9 @@ SUB GetScreenDimentions (w%, H%)
 END SUB
 
 SUB limit ()
-  STATIC t#
-  WHILE (TIMER - Interval <= t#): WEND
-  t# = TIMER
+  STATIC T#
+  WHILE (TIMER - Interval <= T#): WEND
+  T# = TIMER
 END SUB
 
 SUB LoadChance ()
@@ -406,9 +457,9 @@ SUB PrintAt (X%, Y%, S$)
   NEXT
 END SUB
 
-SUB PrintCentered (Y%, t$)
-  LOCATE Y%, (ScreenWidth - LEN(t$)) / 2
-  PRINT t$;
+SUB PrintCentered (Y%, T$)
+  LOCATE Y%, (ScreenWidth - LEN(T$)) / 2
+  PRINT T$;
 END SUB
 
 SUB PrintPB ()
@@ -440,6 +491,16 @@ SUB PrintPB ()
   FOR i% = i% TO PBLen + 1
     IF POS(0) >= ScreenWidth THEN EXIT FOR
     PRINT MID$(p$, i%, 1);
+  NEXT
+END SUB
+
+SUB Prt (S$)
+  DO: i% = i% + 1: LOOP UNTIL i% + POS(0) >= 1
+
+  FOR i% = i% TO LEN(S$)
+    IF POS(0) = ScreenWidth THEN EXIT FOR
+
+    PRINT MID$(S$, i%, 1);
   NEXT
 END SUB
 
@@ -561,7 +622,7 @@ SUB SetChance (Chances() AS SegChanceType)
 END SUB
 
 SUB WaitS (S!)
-  t# = TIMER
-  WHILE (TIMER - t#) < S!: WEND
+  T# = TIMER
+  WHILE (TIMER - T#) < S!: WEND
 END SUB
 
