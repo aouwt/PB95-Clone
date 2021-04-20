@@ -19,14 +19,18 @@ DO
     COLOR 15: LOCATE MouseY, MouseX: PRINT "Û";
 
     IF MouseLock% = False THEN
+
       IF (MouseY = PBY) AND (MouseX >= PBX) AND (MouseX <= PBX + PBLen) THEN
 
         MouseLock% = MouseX - PBX
 
       ELSE MouseLock% = -1
       END IF
+
     END IF
-  ELSE MouseLock% = False
+
+  ELSE
+    MouseLock% = False
     COLOR 15, 0: LOCATE MouseY, MouseX: PRINT "þ";
   END IF
 
@@ -34,7 +38,6 @@ DO
     PBX = MouseX - MouseLock%
     PBY = MouseY
   END IF
-
 
 
   FOR i% = LBOUND(Segs) TO UBOUND(Segs)
@@ -47,8 +50,15 @@ DO
 
   GOSUB DialogAction
 
+  IF TIMER > D.Time THEN
+    D.X = RND * (ScreenWidth - 18)
+    D.Y = RND * (ScreenHeight - 9)
+    D.Type = RND * 2
+    D.Time = TIMER + ((RND + 1) * 15)
+  END IF
+
   IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
-LOOP 'UNTIL PBVal >= PBLen
+LOOP UNTIL PBVal >= PBLen
 
 GameOver:
   'SYSTEM
@@ -246,15 +256,7 @@ RETURN
 
 
 DialogAction:
-  IF D.Type = 0 THEN
-    IF RND THEN
-      D.Type = 1
-      D.X = RND * (ScreenWidth - 16)
-      D.Y = RND * (ScreenHeight - 5)
-    END IF
-
-    RETURN
-  END IF
+  IF D.Type = 0 THEN RETURN
 
   IF DrawFrame% THEN
     LOCATE D.Y, D.X
@@ -278,6 +280,7 @@ DialogAction:
         LOCATE , D.X: PRINT "³ ";
         COLOR 14:       PRINT "°ÛÛÛ°";
         COLOR 0:             PRINT "          ³"
+        LOCATE , D.X: PRINT "³                ³"
         LOCATE , D.X: PRINT "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ"
     END SELECT
 
@@ -293,7 +296,7 @@ DialogAction:
 
   SELECT CASE D.Type
     CASE 1
-      IF (Y% = 4) AND (X% >= 11) AND (X% <= 14) THEN
+      IF (Y% = 5) AND (X% >= 11) AND (X% <= 14) THEN
         D.Type = 0
       END IF
   END SELECT

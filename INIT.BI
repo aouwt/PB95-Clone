@@ -31,6 +31,7 @@ TYPE DialogType
   Type AS INTEGER
   X    AS INTEGER
   Y    AS INTEGER
+  Time AS DOUBLE
 END TYPE
 
 
