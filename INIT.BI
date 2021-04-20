@@ -39,7 +39,7 @@ REM $INCLUDE: 'CONFIG.BI'
 CONST Interval = 1 / FPS
 CONST ActualGameSpeed = GameSpeed * (15 / FPS)
 CONST PBHalfLen = PBLen / 2
-CONST True = -1, False = 0
+CONST True = 1, False = 0
 
 DIM Segs(5)      AS SegType
 DIM S            AS SegType

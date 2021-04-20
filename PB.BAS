@@ -6,7 +6,7 @@ PBY = 1
 StartTime# = TIMER
 DO
   IF DrawFrame% THEN
-    T# = TIMER
+    t# = TIMER
     'DrawFrame% = False
     COLOR , 0
     CLS
@@ -14,10 +14,10 @@ DO
 
   CALL MousePoll(MouseY, MouseX, L%, R%)
 
-  COLOR 15: LOCATE MouseY, MouseX: PRINT "ў";
-
 
   IF L% THEN
+    COLOR 15: LOCATE MouseY, MouseX: PRINT "л";
+
     IF MouseLock% = False THEN
       IF (MouseY = PBY) AND (MouseX >= PBX) AND (MouseX <= PBX + PBLen) THEN
 
@@ -27,6 +27,7 @@ DO
       END IF
     END IF
   ELSE MouseLock% = False
+    COLOR 15, 0: LOCATE MouseY, MouseX: PRINT "ў";
   END IF
 
   IF MouseLock% > 0 THEN
@@ -46,7 +47,7 @@ DO
 
   GOSUB DialogAction
 
-  IF (TIMER - T#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
+  IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
 LOOP 'UNTIL PBVal >= PBLen
 
 GameOver:
@@ -157,7 +158,7 @@ SegAction:
     IF (S.X <= 1) OR (S.X >= ScreenWidth) GOTO ResetSeg
     IF S.Y < 1 THEN RETURN
 
-    COLOR , S.Type
+    COLOR 15, S.Type
     LOCATE S.Y, S.X
     SELECT CASE S.Type
       CASE 1: PRINT " ";
@@ -259,52 +260,42 @@ DialogAction:
     LOCATE D.Y, D.X
 
     SELECT CASE D.Type
-
       CASE 1
         COLOR 0, 7:   PRINT "кФAnnoying PopupФП"
+        LOCATE , D.X: PRINT "Г                Г"
         LOCATE , D.X: PRINT "Г";
-        COLOR 14:      PRINT "АлллА";
-        COLOR 0:            PRINT "           Г"
+        COLOR 14:      PRINT " АлллА";
+        COLOR 0:             PRINT "          Г"
+        LOCATE , D.X: PRINT "Г ";
+        COLOR 14:       PRINT "лнлол";
+        COLOR 0:             PRINT "          Г"
         LOCATE , D.X: PRINT "Г";
-        COLOR 14:      PRINT "лнлол";
-        COLOR 0:            PRINT "           Г"
-        LOCATE , D.X: PRINT "Г";
-        COLOR 14:      PRINT "лмпмл";
-        COLOR 0:            PRINT "     <OK>  Г"
-        LOCATE , D.X: PRINT "Г";
-        COLOR 14:      PRINT "АлллА";
-        COLOR 0:            PRINT "           Г"
+        COLOR 14:      PRINT "АлллллА";
+        COLOR 0:              PRINT "         Г"
+        LOCATE , D.X: PRINT "Г ";
+        COLOR 14:       PRINT "лмпмл";
+        COLOR 0:             PRINT "    <OK>  Г"
+        LOCATE , D.X: PRINT "Г ";
+        COLOR 14:       PRINT "АлллА";
+        COLOR 0:             PRINT "          Г"
         LOCATE , D.X: PRINT "РФФФФФФФФФФФФФФФФй"
     END SELECT
+
   END IF
 
-  IF (L%) AND (MouseLock% = False) THEN
+  IF (L% <> 0) AND (MouseLock% = -1) AND (MouseX >= D.X) AND (MouseY >= D.Y) THEN
     X% = MouseX - D.X
     Y% = MouseY - D.Y
-  ELSE
-    DialogMouseLock% = False
-    RETURN
+  ELSE RETURN
   END IF
 
-  IF L% THEN
-    IF DialogMouseLock% = False THEN
-      IF (Y% = 1) AND (X% >= 0) AND (X% <= 16) THEN
-
-        DialogMouseLock% = X%
-
-      END IF
-    END IF
-  ELSE DialogMouseLock% = False
-  END IF
-
-  IF DialogMouseLock% THEN
-    D.X = X% + DialogMouseLock%
-    D.Y = Y%
-  END IF
+  MouseLock% = -2
 
   SELECT CASE D.Type
     CASE 1
-      IF (Y% = 4) AND (X% >= 12) AND (X% <= 15) THEN D.Type = 0
+      IF (Y% = 4) AND (X% >= 11) AND (X% <= 14) THEN
+        D.Type = 0
+      END IF
   END SELECT
 
 RETURN
@@ -434,9 +425,9 @@ SUB GetScreenDimentions (w%, H%)
 END SUB
 
 SUB limit ()
-  STATIC T#
-  WHILE (TIMER - Interval <= T#): WEND
-  T# = TIMER
+  STATIC t#
+  WHILE (TIMER - Interval <= t#): WEND
+  t# = TIMER
 END SUB
 
 SUB LoadChance ()
@@ -474,9 +465,9 @@ SUB PrintAt (X%, Y%, S$)
   NEXT
 END SUB
 
-SUB PrintCentered (Y%, T$)
-  LOCATE Y%, (ScreenWidth - LEN(T$)) / 2
-  PRINT T$;
+SUB PrintCentered (Y%, t$)
+  LOCATE Y%, (ScreenWidth - LEN(t$)) / 2
+  PRINT t$;
 END SUB
 
 SUB PrintPB ()
@@ -639,7 +630,7 @@ SUB SetChance (Chances() AS SegChanceType)
 END SUB
 
 SUB WaitS (S!)
-  T# = TIMER
-  WHILE (TIMER - T#) < S!: WEND
+  t# = TIMER
+  WHILE (TIMER - t#) < S!: WEND
 END SUB
 
