@@ -39,6 +39,7 @@ DO
     PBY = MouseY
   END IF
 
+  GOSUB DialogAction
 
   FOR i% = LBOUND(Segs) TO UBOUND(Segs)
     S = Segs(i%)
@@ -48,23 +49,61 @@ DO
 
   PrintPB
 
-  GOSUB DialogAction
-
   IF TIMER > D.Time THEN
-    D.X = RND * (ScreenWidth - 18)
-    D.Y = RND * (ScreenHeight - 9)
-    D.Type = RND * 2
-    D.Time = TIMER + ((RND + 1) * 15)
+    D.X = (RND * (ScreenWidth - DialogWidth) + 1)
+    D.Y = (RND * (ScreenHeight - DialogHeight) + 1)
+    D.Type = RND * 3
+    D.Time = TIMER + ((RND + 1) * 10)
+    D.Var = 0
   END IF
 
-  IF (TIMER - t#) > Interval THEN DrawFrame% = True ELSE DrawFrame% = False
+  IF (TIMER - t#) > Interval THEN
+    IF GameOver% GOTO GameOver
+    DrawFrame% = True
+  ELSE DrawFrame% = False
+  END IF
 LOOP UNTIL PBVal >= PBLen
 
 GameOver:
   'SYSTEM
   EndTime# = TIMER
-  IF PBVal >= PBLen THEN
+  IF GameOver% THEN
 
+    FOR i% = 0 TO 100
+      SOUND ((i% AND 2) * 220 + 220), .1
+      SOUND ((i% AND 1) * 400 + 64), .1
+    NEXT
+    'WIDTH 80, 25
+    COLOR 7, 1
+    CLS
+
+    DO
+      PRINT CHR$(RND * 127 + 32);
+      IF POS(0) >= R% THEN PRINT : R% = RND * ScreenWidth
+    LOOP UNTIL CSRLIN = ScreenHeight - 10
+                                         
+    PRINT
+    LOCATE , 1
+    PRINT "Press space to run CHECKPROGRESS"
+    PRINT "Press any other key to try again"
+
+    'FOR i% = 1000 TO 37 STEP -1
+      SOUND i%, .025
+      SOUND 0, .025
+    'NEXT
+
+    DO
+      SELECT CASE INKEY$
+        CASE ""
+        CASE " "
+          IF ScanProgress%() THEN SYSTEM ELSE SYSTEM 'TODO: Implement lives
+        CASE ELSE
+          EXIT DO
+      END SELECT
+    LOOP
+
+
+  ELSE
     PBX = (ScreenWidth - PBLen) / 2
     PBY = ScreenHeight / 5
 
@@ -109,43 +148,6 @@ GameOver:
     '  SOUND 391, .025
     'NEXT
     SOUND 880, 5
-    
-
-
-
-  ELSE
-    FOR i% = 0 TO 100
-      SOUND ((i% AND 2) * 220 + 220), .1
-      SOUND ((i% AND 1) * 400 + 64), .1
-    NEXT
-    'WIDTH 80, 25
-    COLOR 7, 1
-    CLS
-
-    DO
-      PRINT CHR$(RND * 127 + 32);
-      IF POS(0) >= R% THEN PRINT : R% = RND * ScreenWidth
-    LOOP UNTIL CSRLIN = ScreenHeight - 10
-                                         
-    PRINT
-    LOCATE , 1
-    PRINT "Press space to run CHECKPROGRESS"
-    PRINT "Press any other key to try again"
-
-    'FOR i% = 1000 TO 37 STEP -1
-      SOUND i%, .025
-      SOUND 0, .025
-    'NEXT
-
-    DO
-      SELECT CASE INKEY$
-        CASE ""
-        CASE " "
-          IF ScanProgress%() THEN SYSTEM ELSE SYSTEM 'TODO: Implement lives
-        CASE ELSE
-          EXIT DO
-      END SELECT
-    LOOP
 
   END IF
 
@@ -216,9 +218,10 @@ CheckSeg:
 
         CASE 4
           CALL Fill(PB(), 4)
+          PBVal = PBLen
           PrintPB
           WaitS .5
-          GOTO GameOver
+          GameOver% = True
 
         CASE 5
           PBVal = PBVal - 1
@@ -242,7 +245,7 @@ CheckSeg:
       END SELECT
       GOSUB ResetSeg
 
-    ELSEIF S.Type = 4 THEN GOTO GameOver
+    ELSEIF S.Type = 4 THEN GameOver% = True
 
     ELSE
       SOUND 220, .25
@@ -282,25 +285,70 @@ DialogAction:
         COLOR 0:             PRINT "          ³"
         LOCATE , D.X: PRINT "³                ³"
         LOCATE , D.X: PRINT "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ"
+
+      CASE 2
+        COLOR 15, 4:  PRINT "ÚÄÄÄÄÄÄMineÄÄÄÄÄÄ¿"
+        LOCATE , D.X: PRINT "³";
+        COLOR 0, 7:    PRINT "  ÜÜÛÜÜ         ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , D.X: PRINT "³";
+        COLOR 0, 7:    PRINT " Þ  þ  Û  Watch ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , D.X: PRINT "³";
+        COLOR 0, 7:    PRINT " Û þ þ Ý   out! ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , D.X: PRINT "³";
+        COLOR 0, 7:    PRINT "  ßÛßÛß         ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , D.X: PRINT "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ"
     END SELECT
+
+  END IF
+
+  'Detect progressbar touching it
+  IF (PBX + PBLen > D.X) AND (PBX < D.X + DialogWidth) AND (PBY > D.Y) AND (PBY < D.Y + DialogHeight) THEN
+
+    X% = (PBX + PBHalfLen) - D.X - DialogHalfWidth
+    Y% = PBY - D.Y - DialogHalfHeight
+
+    SOUND 1760, .03
+    SOUND 0, .1
+    IF D.Type = 2 THEN D.Var = D.Var + 1
+
+    IF ABS(X%) <= DialogHalfWidth THEN
+      SELECT CASE SGN(X%)
+        CASE -1, 0: PBX = D.X - PBLen       'On left
+        CASE 1:     PBX = D.X + DialogWidth 'On right
+      END SELECT
+    END IF
+
+    IF ABS(Y%) <= DialogHalfHeight THEN
+      SELECT CASE SGN(Y%)
+        CASE -1, 0: PBY = D.Y                'On top
+        CASE 1:     PBY = D.Y + DialogWidth  'On bottom
+      END SELECT
+    END IF
 
   END IF
 
   IF (L% <> 0) AND (MouseLock% = -1) AND (MouseX >= D.X) AND (MouseY >= D.Y) THEN
     X% = MouseX - D.X
     Y% = MouseY - D.Y
-  ELSE RETURN
+    MouseLock% = -2
+
+    SELECT CASE D.Type  'These ones only need to respond when the mouse is inside of them
+      CASE 1 'Annoying popup
+        IF (Y% = 5) AND (X% >= 11) AND (X% <= 14) THEN
+          D.Type = 0
+        END IF
+    END SELECT
+    RETURN
   END IF
 
-  MouseLock% = -2
-
   SELECT CASE D.Type
-    CASE 1
-      IF (Y% = 5) AND (X% >= 11) AND (X% <= 14) THEN
-        D.Type = 0
-      END IF
+    CASE 2
+      IF D.Var = 10 THEN GameOver% = True
   END SELECT
-
 RETURN
 
 

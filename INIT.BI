@@ -32,11 +32,15 @@ TYPE DialogType
   X    AS INTEGER
   Y    AS INTEGER
   Time AS DOUBLE
+  Var  AS INTEGER
 END TYPE
 
 
 REM $INCLUDE: 'CONFIG.BI'
 
+CONST DialogWidth = 18, DialogHeight = 9
+CONST DialogHalfWidth = DialogWidth / 2
+CONST DialogHalfHeight = DialogHeight / 2
 CONST Interval = 1 / FPS
 CONST ActualGameSpeed = GameSpeed * (15 / FPS)
 CONST PBHalfLen = PBLen / 2
