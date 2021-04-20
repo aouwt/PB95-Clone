@@ -23,12 +23,13 @@ DO
 
         MouseLock% = MouseX - PBX
 
+      ELSE MouseLock% = -1
       END IF
     END IF
   ELSE MouseLock% = False
   END IF
 
-  IF MouseLock% THEN
+  IF MouseLock% > 0 THEN
     PBX = MouseX - MouseLock%
     PBY = MouseY
   END IF
@@ -120,10 +121,10 @@ GameOver:
     PRINT "Press space to run CHECKPROGRESS"
     PRINT "Press any other key to try again"
 
-    FOR i% = 1000 TO 37 STEP -1
+    'FOR i% = 1000 TO 37 STEP -1
       SOUND i%, .025
       SOUND 0, .025
-    NEXT
+    'NEXT
 
     DO
       SELECT CASE INKEY$
@@ -247,8 +248,8 @@ DialogAction:
   IF D.Type = 0 THEN
     IF RND THEN
       D.Type = 1
-      D.X = RND * ScreenWidth
-      D.Y = RND * ScreenHeight
+      D.X = RND * (ScreenWidth - 16)
+      D.Y = RND * (ScreenHeight - 5)
     END IF
 
     RETURN
@@ -260,20 +261,20 @@ DialogAction:
     SELECT CASE D.Type
 
       CASE 1
-        COLOR 0, 7:             Prt "⁄ƒAnnoying Popupƒø"
-        LOCATE CSRLIN + 1, D.X: Prt "≥ "
-        COLOR 14:                 Prt "∞€€€∞"
-        COLOR 0:                       Prt "          ≥"
-        LOCATE CSRLIN + 1, D.X: Prt "≥"
-        COLOR 14:                Prt "€›€ﬁ€"
-        COLOR 0:                      Prt "           ≥"
-        LOCATE CSRLIN + 1, D.X: Prt "≥"
-        COLOR 14:                Prt "€‹ﬂ‹€"
-        COLOR 0:                      Prt "     <OK>  ≥"
-        LOCATE CSRLIN + 1, D.X: Prt "≥"
-        COLOR 14:                Prt "∞€€€∞"
-        COLOR 0:                      Prt "           ≥"
-        LOCATE CSRLIN + 1, D.X: Prt "¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ"
+        COLOR 0, 7:   PRINT "⁄ƒAnnoying Popupƒø"
+        LOCATE , D.X: PRINT "≥";
+        COLOR 14:      PRINT "∞€€€∞";
+        COLOR 0:            PRINT "           ≥"
+        LOCATE , D.X: PRINT "≥";
+        COLOR 14:      PRINT "€›€ﬁ€";
+        COLOR 0:            PRINT "           ≥"
+        LOCATE , D.X: PRINT "≥";
+        COLOR 14:      PRINT "€‹ﬂ‹€";
+        COLOR 0:            PRINT "     <OK>  ≥"
+        LOCATE , D.X: PRINT "≥";
+        COLOR 14:      PRINT "∞€€€∞";
+        COLOR 0:            PRINT "           ≥"
+        LOCATE , D.X: PRINT "¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ"
     END SELECT
   END IF
 
@@ -281,8 +282,24 @@ DialogAction:
     X% = MouseX - D.X
     Y% = MouseY - D.Y
   ELSE
-    X% = 0
-    Y% = 0
+    DialogMouseLock% = False
+    RETURN
+  END IF
+
+  IF L% THEN
+    IF DialogMouseLock% = False THEN
+      IF (Y% = 1) AND (X% >= 0) AND (X% <= 16) THEN
+
+        DialogMouseLock% = X%
+
+      END IF
+    END IF
+  ELSE DialogMouseLock% = False
+  END IF
+
+  IF DialogMouseLock% THEN
+    D.X = X% + DialogMouseLock%
+    D.Y = Y%
   END IF
 
   SELECT CASE D.Type
@@ -369,8 +386,8 @@ DATA 100, 3
 DATA   0, 1
 DATA   5, 5
 DATA  50, 1
-DATA  20, 1 
-DATA  70, 1 
+DATA  20, 1
+DATA  70, 1
 DATA  30, 1
 DATA  25, 1.5
 
