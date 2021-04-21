@@ -1,0 +1,71 @@
+note: colors won't appear here because
+      this is plain text
+
+markers represent hitboxes
+all dimentions are in hex
+
+
+dialog 1
+12 x 5
+    |------------|
+                 111
+  123456789ABCDEF012
+ 1ÚÄAnnoying PopupÄ¿
+-2³ ÚÄÄÄÄÄÄÄÄÄÄÄÄ¿ Ş
+|3³ ³    Close   ³ Ş
+-4³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÙ Ş
+ 5ÀÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÛ
+
+
+
+dialog 2
+A x 5
+
+   |------|
+  123456789A
+ 1ÚÄÄMineÄÄ¿
+ 2³        Ş
+-3³<Cancel>Ş
+ 4³        Ş
+ 5ÀÜÜÜÜÜÜÜÜÛ
+
+
+
+dialog 3
+F x 7
+           |--|
+  123456789ABCDEF
+ 1   ÜÜÜ ÚÄÄÄÄÄÄ¿
+ 2  Ş   İ³      Ş
+ 3Ü ŞŞŞ İ³I loveŞ
+ 4 İŞ   İ´ you! Ş
+ 5 İŞ Ü İ³      Ş
+-6 Ş ß  İ³ <OK> Ş
+ 7  ßßßß ÀÜÜÜÜÜÜÛ
+
+
+
+dialog 4
+12 x 7
+             |--|
+                 111
+  123456789ABCDEF012
+ 1°²° ÜÜÜ ÚÄÄÄÄÄÄÄÄ¿
+ 2 ³ Ş   İ³        Ş
+ 3 Û ŞŞŞ İ³I have aŞ
+ 4 ÛİŞ   İ´present!Ş
+ 5 ÛİŞ Ü İ³        Ş
+-6 ÛŞ ß  İ³  <OK>  Ş
+ 7 Û ßßßß ÀÜÜÜÜÜÜÜÜÛ
+
+
+dialog 5
+note: this one is inverted when rendered
+3 x 4
+    |
+  123
+-1±±X
+ 2ÛÛÛ
+ 3ÛÛÛ
+ 4ßßß
+

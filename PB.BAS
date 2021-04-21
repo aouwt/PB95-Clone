@@ -287,29 +287,37 @@ DialogAction:
         LOCATE , D.X: PRINT "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ"
 
       CASE 2
-        COLOR 15, 4:  PRINT "ÚÄÄÄÄÄÄMineÄÄÄÄÄÄ¿"
+        COLOR 15, 4:  PRINT "ÚÄÄÄÄÄÄMineÄÄÄ´XÃ¿"
         LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT "                ";
-        COLOR 15, 4:                   PRINT "³"
+        COLOR 15, 4:                   PRINT "Þ"
         LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT "  ÜÜÛÜÜ         ";
-        COLOR 15, 4:                   PRINT "³"
+        COLOR 15, 4:                   PRINT "Þ"
         LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT " Þ²²þ²²Ý  Watch ";
-        COLOR 15, 4:                   PRINT "³"
+        COLOR 15, 4:                   PRINT "Þ"
         LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT " Û²²±²²Û        ";
-        COLOR 15, 4:                   PRINT "³"
+        COLOR 15, 4:                   PRINT "Þ"
         LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT " Þ²þ²þ²Ý   out! ";
-        COLOR 15, 4:                   PRINT "³"
+        COLOR 15, 4:                   PRINT "Þ"
         LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT "  ßÛßÛß         ";
-        COLOR 15, 4:                   PRINT "³"
+        COLOR 15, 4:                   PRINT "Þ"
         LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT "                ";
-        COLOR 15, 4:                   PRINT "³"
-        LOCATE , D.X: PRINT "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ"
+        COLOR 15, 4:                   PRINT "Þ"
+        LOCATE , D.X: PRINT "ÀÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÛ"
+
+      CASE 5
+        'this one looks weird but that's because
+        'its inverted!
+        COLOR 0, 7:   PRINT "±±X"
+        LOCATE , D.X: PRINT "   "
+        LOCATE , D.X: PRINT "   "
+        LOCATE , D.X: PRINT "ÜÜÜ"
     END SELECT
 
   END IF
