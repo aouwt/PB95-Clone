@@ -289,16 +289,25 @@ DialogAction:
       CASE 2
         COLOR 15, 4:  PRINT "ÚÄÄÄÄÄÄMineÄÄÄÄÄÄ¿"
         LOCATE , D.X: PRINT "³";
+        COLOR 0, 7:    PRINT "                ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT "  ÜÜÛÜÜ         ";
         COLOR 15, 4:                   PRINT "³"
         LOCATE , D.X: PRINT "³";
-        COLOR 0, 7:    PRINT " Þ  þ  Û  Watch ";
+        COLOR 0, 7:    PRINT " Þ²²þ²²Ý  Watch ";
         COLOR 15, 4:                   PRINT "³"
         LOCATE , D.X: PRINT "³";
-        COLOR 0, 7:    PRINT " Û þ þ Ý   out! ";
+        COLOR 0, 7:    PRINT " Û²²±²²Û        ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , D.X: PRINT "³";
+        COLOR 0, 7:    PRINT " Þ²þ²þ²Ý   out! ";
         COLOR 15, 4:                   PRINT "³"
         LOCATE , D.X: PRINT "³";
         COLOR 0, 7:    PRINT "  ßÛßÛß         ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , D.X: PRINT "³";
+        COLOR 0, 7:    PRINT "                ";
         COLOR 15, 4:                   PRINT "³"
         LOCATE , D.X: PRINT "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ"
     END SELECT
@@ -347,7 +356,7 @@ DialogAction:
 
   SELECT CASE D.Type
     CASE 2
-      IF D.Var = 10 THEN GameOver% = True
+      IF D.Var >= 100 THEN GameOver% = True
   END SELECT
 RETURN
 
@@ -678,6 +687,33 @@ SUB SetChance (Chances() AS SegChanceType)
     Chances(i%).EC = (Chances(i%).C / Mult#) + Chances(i% - 1).EC
     'PRINT Chances(i%).EC
   NEXT
+END SUB
+
+SUB testr ()
+        COLOR 15, 4:  PRINT "ÚÄÄÄÄÄÄMineÄÄÄÄÄÄ¿"
+        LOCATE , DX: PRINT "³";
+        COLOR 0, 7:    PRINT "                ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , DX: PRINT "³";
+        COLOR 0, 7:    PRINT "  ÜÜÛÜÜ         ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , DX: PRINT "³";
+        COLOR 0, 7:    PRINT " Þ²²þ²²Û  Watch ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , DX: PRINT "³";
+        COLOR 0, 7:    PRINT " Û²²±²²Ý        ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , DX: PRINT "³";
+        COLOR 0, 7:    PRINT " Þ²þ²þ²Û   out! ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , DX: PRINT "³";
+        COLOR 0, 7:    PRINT "  ßÛßÛß         ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , DX: PRINT "³";
+        COLOR 0, 7:    PRINT "                ";
+        COLOR 15, 4:                   PRINT "³"
+        LOCATE , DX: PRINT "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ"
+
 END SUB
 
 SUB WaitS (S!)
